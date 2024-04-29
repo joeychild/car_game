@@ -5,6 +5,7 @@ using UnityEngine;
 namespace PathCreation.Examples {
     public class RoadMeshCreator : PathSceneTool {
         [Header ("Road settings")]
+        public Vector3 position;
         public float roadWidth = .4f;
         [Range (0, .5f)]
         public float thickness = .15f;
@@ -121,11 +122,11 @@ namespace PathCreation.Examples {
         void AssignMeshComponents () {
 
             if (meshHolder == null) {
-                meshHolder = new GameObject ("Road Mesh Holder");
+                meshHolder = new GameObject ("road");
             }
 
             meshHolder.transform.rotation = Quaternion.identity;
-            meshHolder.transform.position = Vector3.zero;
+            meshHolder.transform.position = position;
             meshHolder.transform.localScale = Vector3.one;
 
             // Ensure mesh renderer and filter components are assigned
@@ -135,9 +136,16 @@ namespace PathCreation.Examples {
             if (!meshHolder.GetComponent<MeshRenderer> ()) {
                 meshHolder.gameObject.AddComponent<MeshRenderer> ();
             }
+            if(!meshHolder.GetComponent<MeshCollider> ())
+            {
+                meshHolder.gameObject.AddComponent<MeshCollider>();
+            }
+
 
             meshRenderer = meshHolder.GetComponent<MeshRenderer> ();
             meshFilter = meshHolder.GetComponent<MeshFilter> ();
+            MeshCollider meshCollider = meshHolder.GetComponent<MeshCollider>();
+            
             if (mesh == null) {
                 mesh = new Mesh ();
             }

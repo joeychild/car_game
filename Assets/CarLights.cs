@@ -8,80 +8,81 @@ public class CarLights : MonoBehaviour
     public enum Side
     {
         Front,
-        Back
+        Back,
+        Left,
+        Right,
+        Reverse
     }
 
     [System.Serializable]
-    public struct Light
+    new public struct light
     {
-        public GameObject lightObj;
-        public Material lightMat;
+        public Light lightObj;
         public Side side;
     }
 
-    public Toggle lightToggle;
-
+    [HideInInspector]
     public bool isFrontLightOn;
+    [HideInInspector]
     public bool isBackLightOn;
 
-    public Color frontLightOnColor;
-    public Color frontLightOffColor;
-    public Color backLightOnColor;
-    public Color backLightOffColor;
+    [HideInInspector]
+    public bool lBlink = false;
+    [HideInInspector]
+    public bool rBlink = false;
 
-    public List<Light> lights;
+    public daynight dayNightScript;
+
+    public List<light> lights;
 
     void Start()
     {
-        isFrontLightOn = true;
-        isBackLightOn = false;
+        if(dayNightScript.isDay)
+            isFrontLightOn = true;
+        else
+            isFrontLightOn = false;
+        OperateFrontLights();
     }
 
     public void OperateFrontLights()
     {
         isFrontLightOn = !isFrontLightOn;
-
         if (isFrontLightOn)
         {
             //Turn On Lights
             foreach(var light in lights)
             {
-                if(light.side == Side.Front && light.lightObj.activeInHierarchy == false)
+                if(light.side == Side.Front)
                 {
-                    light.lightObj.SetActive(true);
-                    light.lightMat.color = frontLightOnColor;
+                    light.lightObj.intensity = 5;
                 }
             }
-
-            lightToggle.gameObject.GetComponent<Image>().color = Color.yellow;
         }
         else
         {
             //Turn Off Lights
             foreach (var light in lights)
             {
-                if (light.side == Side.Front && light.lightObj.activeInHierarchy == true)
+                if (light.side == Side.Front)
                 {
-                    light.lightObj.SetActive(false);
-                    light.lightMat.color = frontLightOffColor;
+                    light.lightObj.intensity = .5f;
                 }
             }
-
-            lightToggle.gameObject.GetComponent<Image>().color = Color.white;
         }
     }
 
     public void OperateBackLights()
     {
+        
+
         if (isBackLightOn)
         {
             //Turn On Lights
             foreach (var light in lights)
             {
-                if (light.side == Side.Back && light.lightObj.activeInHierarchy == false)
+                if (light.side == Side.Back)
                 {
-                    light.lightObj.SetActive(true);
-                    light.lightMat.color = backLightOnColor;
+                    light.lightObj.intensity = 2;
                 }
             }
         }
@@ -90,11 +91,42 @@ public class CarLights : MonoBehaviour
             //Turn Off Lights
             foreach (var light in lights)
             {
-                if (light.side == Side.Back && light.lightObj.activeInHierarchy == true)
+                if (light.side == Side.Back)
                 {
-                    light.lightObj.SetActive(false);
-                    light.lightMat.color = backLightOffColor;
+                    light.lightObj.intensity = .5f;
                 }
+            }
+        }
+    }
+
+    public void OperateBlinkerLights()
+    {
+        foreach(var light in lights)
+        {
+            if(light.side == Side.Left || light.side == Side.Right)
+            {
+                if((light.side == Side.Left && lBlink) || (light.side == Side.Right && rBlink))
+                {
+                    light.lightObj.enabled = !light.lightObj.enabled;
+                }
+                else
+                {
+                    light.lightObj.enabled = false;
+                }
+            }
+        }
+    }
+
+    public void OperateReverseLights()
+    {
+        foreach(var light in lights)
+        {
+            if(light.side == Side.Reverse)
+            {
+                if(Input.GetKey("s"))
+                    light.lightObj.enabled = true;
+                else
+                    light.lightObj.enabled = false;
             }
         }
     }
