@@ -3,27 +3,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+[Serializable]
+public struct Wheel
+{
+    public GameObject wheelModel;
+    public WheelCollider wheelCollider;
+    public GameObject wheelEffectObj;
+    public ParticleSystem smokeParticle;
+    public Axle axle;
+
+}
+
+public enum Axle
+{
+    Front,
+    Rear
+}
+
 public class driving : MonoBehaviour
 {
-
-    public enum Axle
-    {
-        Front,
-        Rear
-    }
     int cam = 1; //starting camera
     Camera[] cams;
-
-    [Serializable]
-    public struct Wheel
-    {
-        public GameObject wheelModel;
-        public WheelCollider wheelCollider;
-        public GameObject wheelEffectObj;
-        public ParticleSystem smokeParticle;
-        public Axle axle;
-
-    }
 
     [Header ("Basic Elements")]
 
@@ -55,7 +55,8 @@ public class driving : MonoBehaviour
     public AudioSource crashPrefab;
     public CarSounds[] brakes;
     camerafollow camScript;
-        
+    
+    //general scripts
     void Start()
     {
         carRb = GetComponent<Rigidbody>();
@@ -72,7 +73,7 @@ public class driving : MonoBehaviour
         StartCoroutine(EngineSounds());
 
         //MUST START WITH CINEMATIC CAM
-        camScript = cams[cam].GetComponent<camerafollow>();
+        camScript = Array.Find(cams, FindCinematic).GetComponent<camerafollow>();
         camScript.StartCoroutine(camScript.FollowCar());
     }
 
@@ -93,6 +94,7 @@ public class driving : MonoBehaviour
         }
     }
 
+    //collision scripts
     void OnCollisionEnter(Collision collision)
     {
         Vector3 PoC = collision.contacts[0].point;
@@ -101,7 +103,7 @@ public class driving : MonoBehaviour
         ParticleSystem sparks = Instantiate(explosionPrefab, PoC, quat);
         Destroy(sparks, sparks.main.duration);
 
-        if(!(collision.gameObject.name.Equals("road")))
+        if(!collision.gameObject.name.Equals("road"))
         {
             if(!GameObject.Find("crash (Clone)"))
             {
@@ -109,7 +111,9 @@ public class driving : MonoBehaviour
                 Destroy(sound, sound.clip.length);
             }
             Debug.Log("not road");
+            crashed = true;
             Fail(alarm, wheels, carLights);
+            smoke.Play(); 
         }
         else
         {
@@ -119,8 +123,6 @@ public class driving : MonoBehaviour
 
     public void Fail(CarSounds alarm, List<Wheel> wheels, CarLights carLights)
     {
-        crashed = true;
-        
         alarm.carAudio.loop = true;
         alarm.SetClip(0);
         alarm.carAudio.Play();
@@ -129,9 +131,15 @@ public class driving : MonoBehaviour
         carLights.rBlink = true;
         foreach (var wheel in wheels)
             wheel.wheelCollider.motorTorque = 0;
-        smoke.Play(); 
         Debug.Log("crash complete");
     }
+
+    //Camera scripts
+    bool FindCinematic(Camera cam)
+    {
+        return cam.transform.name.Equals("Cinematic");
+    }
+
     void CameraSwitch()
     {
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
@@ -143,20 +151,21 @@ public class driving : MonoBehaviour
             cams[cam].enabled = true;
             cams[cam].GetComponent<AudioListener>().enabled = true;
             // Debug.Log(cams[cam].name);
-            if(cams[cam].name == "Cinematic")
-            {
-                // Debug.Log("if");
-                camScript.Attach();
-                camScript.Detach();
-                camScript.StartCoroutine(camScript.FollowCar());
-            }
-            else
-            {
-                camScript.StopCoroutine(camScript.FollowCar());
-            }
+            // if(cams[cam].name == "Cinematic")
+            // {
+            //     // Debug.Log("if");
+            //     camScript.Attach();
+            //     camScript.Detach();
+            //     camScript.StartCoroutine(camScript.FollowCar());
+            // }
+            // else
+            // {
+            //     camScript.StopCoroutine(camScript.FollowCar());
+            // }
         }
     }
 
+    //movement scripts
     public void MoveInput(float input)
     {
         moveInput = input;
@@ -240,6 +249,7 @@ public class driving : MonoBehaviour
         carRb.rotation = Quaternion.Euler(carRot);
     }
 
+    //animation scripts
     void AnimateWheels()
     {
         foreach(var wheel in wheels)
@@ -276,6 +286,7 @@ public class driving : MonoBehaviour
         }
     }
 
+    //audio scripts
     void BrakeSounds()
     {
         if (
@@ -329,6 +340,7 @@ public class driving : MonoBehaviour
             engine.carAudio.Stop();
     }
 
+    //blinker and car alarm script
     public IEnumerator Lights(bool right, CarSounds alarm, CarLights carLights) //blinkers are right or left
     {
         bool off = false;

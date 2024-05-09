@@ -8,6 +8,7 @@ public class daynight : MonoBehaviour
     public Material night;
     public Light sun;
     public bool isDay;
+    public GameObject warehouse;
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +17,8 @@ public class daynight : MonoBehaviour
         {
             RenderSettings.skybox = day;
             sun.enabled = true;
+            foreach (Light light in warehouse.GetComponentsInChildren<Light>())
+                light.enabled = false;
         }
         else
         {

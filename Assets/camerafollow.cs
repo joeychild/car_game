@@ -49,15 +49,16 @@ public class camerafollow : MonoBehaviour
         {
             if((carRb.position - transform.position).magnitude > offset.magnitude * 1.25)
             {
-                transform.parent = carRb.transform;
-                transform.localPosition = offset / 100;
-                transform.parent = null;
+                // transform.parent = carRb.transform;
+                // Debug.Log((carRb.position - transform.position).z);
+                // transform.position = new Vector3(carRb.position.x + offset.x, carRb.position.y + offset.y, (carRb.position - transform.position).z < 0 ? carRb.position.z - offset.z : carRb.position.z + offset.z);
+                // transform.parent = null;
+                transform.position = carRb.position + offset;
             }
-            
             transform.rotation = Quaternion.Euler(  
-                                                    Mathf.Rad2Deg * 
-                                                    Mod(Mathf.Atan((transform.position.y - carRb.position.y) / 
-                                                    (transform.position.x - carRb.position.x)), 180),
+                                                    Mathf.Abs(Mathf.Rad2Deg * 
+                                                    Mathf.Atan((transform.position.y - carRb.position.y) / 
+                                                    (transform.position.x - carRb.position.x))) - 10,
                                                     Mod(Mathf.Rad2Deg * 
                                                     Mathf.Atan((carRb.position.x - transform.position.x) / 
                                                     (carRb.position.z - transform.position.z)), 180) + 180, 
